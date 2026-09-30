@@ -117,7 +117,7 @@ const LOGO_SRC = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAhYAAACbCAYAAAA+
 const SUPABASE_URL = 'https://wofunagfjullzwagwfyg.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_s5C9oadhK8oFUfIuv1Me-Q_tMUGVJRc';
 // 3) Cambiá esta contraseña antes de publicar.
-const ADMIN_PASSWORD = 'cambiaesta123';
+const ADMIN_PASSWORD = 'entregas26';
 // 4) Opcional: pegá aquí la URL de tu Apps Script (ver apps-script-email.gs) para
 //    que se envíe un mail de confirmación automático. Si la dejás así, no se envía nada.
 const EMAIL_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbwEQPPanIkCeTZUUHpUVDes1KATV6TU4iJjYSrAXAS71UqHCBKACO3XcofGjDphm4c6pQ/exec';
@@ -342,6 +342,8 @@ function renderStepSlots(){
   const takenSlots = state.deliveries.filter(x => x.delivery_date===state.booking.date).map(x=>x.time_range);
   const takenCountPerSlot = {};
   takenSlots.forEach(s => { takenCountPerSlot[s] = (takenCountPerSlot[s]||0) + 1; });
+  // recargamos datos frescos al mostrar las franjas para que el conteo sea preciso
+  if(!state._slotsLoaded){ state._slotsLoaded = true; loadData().then(()=>{ state._slotsLoaded = false; render(); }); }
   const dateLabel = new Date(state.booking.date+'T00:00:00').toLocaleDateString('es-UY', {weekday:'long', day:'2-digit', month:'long'});
   return `
   <div class="ficha">
@@ -465,13 +467,14 @@ function renderStepReview(){
 
 async function confirmBooking(){
   const b = state.booking;
+  await loadData(); // recargamos datos frescos antes de validar
   const slotCount = state.deliveries.filter(d => d.delivery_date===b.date && d.time_range===b.slot).length;
   const stillFree = slotCount < 2;
   const unitFree = !state.deliveries.some(d => d.unit_name===b.unit_name);
-  if(!stillFree || !unitFree){
-    state.bookingError = 'Justo se ocupó ese horario o esa unidad. Elegí de nuevo.';
-    await loadData();
-    state.step = 2;
+  const cocheraFree = !b.cochera_name || !state.deliveries.some(d => d.unit_name===b.cochera_name);
+  if(!stillFree || !unitFree || !cocheraFree){
+    state.bookingError = !stillFree ? 'Ese horario ya no tiene cupo disponible. Elegí otro.' : 'Esa unidad o cochera ya tiene una entrega agendada.';
+    state.step = !stillFree ? 2 : 3;
     render(); return;
   }
   const {error} = await sb.from('deliveries').insert({
