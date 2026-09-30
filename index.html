@@ -342,8 +342,7 @@ function renderStepSlots(){
   const takenSlots = state.deliveries.filter(x => x.delivery_date===state.booking.date).map(x=>x.time_range);
   const takenCountPerSlot = {};
   takenSlots.forEach(s => { takenCountPerSlot[s] = (takenCountPerSlot[s]||0) + 1; });
-  // recargamos datos frescos al mostrar las franjas para que el conteo sea preciso
-  if(!state._slotsLoaded){ state._slotsLoaded = true; loadData().then(()=>{ state._slotsLoaded = false; render(); }); }
+
   const dateLabel = new Date(state.booking.date+'T00:00:00').toLocaleDateString('es-UY', {weekday:'long', day:'2-digit', month:'long'});
   return `
   <div class="ficha">
@@ -369,9 +368,9 @@ function selectSlot(slot){
 }
 
 function renderStepUnitForm(){
-  const bookedUnits = new Set(state.deliveries.map(d => d.unit_name));
-  const availableApts = state.units.filter(u => u.tipo==='Unidad' && !bookedUnits.has(u.unit_name));
-  const availableCocheras = state.units.filter(u => u.tipo==='Cochera' && !bookedUnits.has(u.unit_name));
+  const bookedNames = new Set(state.deliveries.map(d => d.unit_name));
+  const availableApts = state.units.filter(u => u.tipo==='Unidad' && !bookedNames.has(u.unit_name));
+  const availableCocheras = state.units.filter(u => u.tipo==='Cochera' && !bookedNames.has(u.unit_name));
   const b = state.booking;
   return `
   <div class="ficha">
@@ -411,9 +410,9 @@ function renderStepUnitForm(){
 }
 
 function continueToReview(){
-  const bookedUnits = new Set(state.deliveries.map(d => d.unit_name));
-  const validApts = new Set(state.units.filter(u => u.tipo==='Unidad' && !bookedUnits.has(u.unit_name)).map(u=>u.unit_name));
-  const validCocheras = new Set(state.units.filter(u => u.tipo==='Cochera' && !bookedUnits.has(u.unit_name)).map(u=>u.unit_name));
+  const bookedNames = new Set(state.deliveries.map(d => d.unit_name));
+  const validApts = new Set(state.units.filter(u => u.tipo==='Unidad' && !bookedNames.has(u.unit_name)).map(u=>u.unit_name));
+  const validCocheras = new Set(state.units.filter(u => u.tipo==='Cochera' && !bookedNames.has(u.unit_name)).map(u=>u.unit_name));
   const unit_name = $('f_unit').value.trim();
   const cochera_name = $('f_cochera').value.trim();
   const nombre = $('f_nombre').value.trim();
