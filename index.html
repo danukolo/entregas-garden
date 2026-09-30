@@ -518,7 +518,7 @@ function renderStepSuccess(){
     ${corners()}
     <span class="stamp agendada">Entrega agendada</span>
     <h2 style="margin-top:14px;">¡Listo, ${escHtml(b.nombre)}!</h2>
-    <p class="helper">Te esperamos en ${escHtml(b.unit_name)}${b.cochera_name ? ' y cochera ' + escHtml(b.cochera_name) : ''} el ${escHtml(dateLabel)}, de ${b.slot.replace('-',' a ')}.</p>
+    <p class="helper">Te esperamos en Garden el ${escHtml(dateLabel)}, a las ${b.slot.split('-')[0]}. <a href="https://maps.app.goo.gl/UShbcqxThbQXFLnq7" target="_blank" style="color:var(--accent-deep);">📍 Ver ubicación en el mapa</a></p>
     <button class="secondary" style="margin-top:14px;" onclick="goPublic()">Agendar otra unidad</button>
   </div>`;
 }
