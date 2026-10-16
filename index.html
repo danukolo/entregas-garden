@@ -187,6 +187,7 @@ async function fetchGastosPendientes(unit_name){
 }
 
 const TIME_SLOTS = ['09:00-10:00','10:00-11:00','11:00-12:00','13:00-14:00','14:00-15:00','15:00-16:00','16:00-17:00'];
+const BLOCKED_DATES = ['2026-11-02']; // fechas deshabilitadas
 function slotsForDate(dateStr){
   const day = new Date(dateStr+'T00:00:00').getDay();
   return day === 5 ? TIME_SLOTS.filter(s => s !== '16:00-17:00') : TIME_SLOTS; // viernes sin 16 a 17
@@ -294,18 +295,19 @@ function renderCalendar(){
     const weekday = dateObj.getDay();
     const isWeekend = weekday===0 || weekday===6;
     const isPast = dateObj < todayDate;
+    const isBlocked = BLOCKED_DATES.includes(dateStr);
     const MAX_PER_SLOT = 2;
     const takenCount = state.deliveries.filter(x => x.delivery_date===dateStr).length;
-    const isFull = takenCount >= slotsForDate(dateStr).length * MAX_PER_SLOT;
+    const isFull = isBlocked || takenCount >= slotsForDate(dateStr).length * MAX_PER_SLOT;
     const isSelected = state.booking.date === dateStr;
 
     let cls = 'day';
-    if(isPast || isWeekend) cls += ' disabled';
+    if(isPast || isWeekend || isBlocked) cls += ' disabled';
     else if(isFull) cls += ' full';
     else cls += ' ok';
     if(isSelected) cls += ' selected';
 
-    const clickable = !isPast && !isWeekend && !isFull;
+    const clickable = !isPast && !isWeekend && !isBlocked && !isFull;
     cells += `<div class="${cls}" ${clickable ? `onclick="selectDate('${dateStr}')"` : ''}>${d}</div>`;
   }
 
